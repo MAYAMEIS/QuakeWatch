@@ -1,5 +1,10 @@
 ﻿# Monitoring Configuration
 This feature adds monitoring capabilities to QuakeWatch
 - Real-time alerts
-- Performance metrics  
+- Performance metrics
 - Health checks
+
+# Documentation Updates
+Updated documentation for QuakeWatch project
+- Installation guide
+- API reference
