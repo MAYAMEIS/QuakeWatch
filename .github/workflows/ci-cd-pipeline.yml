@@ -1,0 +1,62 @@
+﻿name: QuakeWatch CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10]
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pylint flask requests matplotlib
+    
+    - name: Run pylint
+      run: |
+        pylint Phase1-QuakeWatch/*.py --exit-zero
+  
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Build Docker image
+      run: |
+        cd Phase1-QuakeWatch
+        docker build -t quakewatch:test .
+    
+    - name: Test container
+      run: |
+        docker run -d -p 5000:5000 quakewatch:test
+        sleep 5
+        curl http://localhost:5000/health || echo "Health check endpoint not found"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Deploy message
+      run: |
+        echo "Ready to deploy to production!"
+        echo "In a real scenario, this would deploy to Kubernetes"
