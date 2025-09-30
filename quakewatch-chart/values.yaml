@@ -1,10 +1,10 @@
-﻿# Default values for quakewatch
+
 replicaCount: 3
 
 image:
   repository: mayam123/quakewatch
   tag: latest
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 service:
   type: LoadBalancer
@@ -24,3 +24,18 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 50
+
+configmap:
+  appEnv: production
+  refreshInterval: "30"
+  maxResults: "100"
+  defaultLocation: "Tel Aviv, Israel"
+  logLevel: INFO
+
+secret:
+  apiKey: YWJjZGVmZ2hpams=
+  dbPassword: cGFzc3dvcmQxMjM=
+
+cronjob:
+  enabled: true
+  schedule: "*/5 * * * *"
