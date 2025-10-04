@@ -1,0 +1,48 @@
+# Docker image configuration
+image:
+  repository: mayam123/quakewatch
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Deployment configuration
+replicaCount: 3
+
+# Service configuration
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 5000
+
+# HPA configuration
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+
+# ConfigMap values
+config:
+  APP_ENV: "production"
+  REFRESH_INTERVAL: "30"
+  MAX_RESULTS: "100"
+  DEFAULT_LOCATION: "Tel Aviv, Israel"
+  LOG_LEVEL: "INFO"
+
+# Secret values (plain text - will be base64 encoded by Helm)
+secret:
+  apiKey: "abcdefghijk"
+  dbPassword: "password123"
+
+# CronJob configuration
+cronjob:
+  schedule: "*/5 * * * *"
+  enabled: true
+
+# Resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

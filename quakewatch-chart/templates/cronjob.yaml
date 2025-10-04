@@ -1,0 +1,22 @@
+{{- if .Values.cronjob.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-cronjob
+spec:
+  schedule: "{{ .Values.cronjob.schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: quakewatch-check
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Checking earthquake data at $(date)"
+              curl -s http://{{ .Release.Name }}-service/health || echo "Health check failed"
+          restartPolicy: OnFailure
+{{- end }}

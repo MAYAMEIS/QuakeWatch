@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  APP_ENV: {{ .Values.config.APP_ENV | quote }}
+  REFRESH_INTERVAL: {{ .Values.config.REFRESH_INTERVAL | quote }}
+  MAX_RESULTS: {{ .Values.config.MAX_RESULTS | quote }}
+  DEFAULT_LOCATION: {{ .Values.config.DEFAULT_LOCATION | quote }}
+  LOG_LEVEL: {{ .Values.config.LOG_LEVEL | quote }}
