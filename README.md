@@ -155,7 +155,7 @@ docker images
 1. **Deploy Initial Pod**
 
 ```bash
-kubectl apply -f Phase2-QuakeWatch/pod.yaml
+kubectl apply -f pod.yaml
 kubectl get pods
 kubectl logs quakewatch-pod
 kubectl port-forward quakewatch-pod 5000:5000
@@ -164,14 +164,14 @@ kubectl port-forward quakewatch-pod 5000:5000
 
 2. **Deploy Application with Deployment**
 ```bash
-kubectl apply -f Phase2-QuakeWatch/deployment.yaml
+kubectl apply -f deployment.yaml
 kubectl get deployments
 kubectl get pods
 ```
 
 3. **Expose with Service**
 ```bash
-kubectl apply -f Phase2-QuakeWatch/service.yaml
+bashkubectl apply -f service.yaml
 kubectl get services
 minikube service quakewatch-service
 ```
@@ -179,14 +179,14 @@ minikube service quakewatch-service
 4. **Configure Auto-scaling**
 ```bash
 minikube addons enable metrics-server
-kubectl apply -f Phase2-QuakeWatch/hpa.yaml
+kubectl apply -f hpa.yaml
 kubectl get hpa
 ```
 
 5. **Add Configuration**
 ```bash
-kubectl apply -f Phase2-QuakeWatch/configmap.yaml
-kubectl apply -f Phase2-QuakeWatch/secret.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f secret.yaml
 kubectl get configmaps
 kubectl get secrets
 
@@ -196,14 +196,14 @@ kubectl apply -f Phase2-QuakeWatch/deployment.yaml
 
 6. **Setup CronJob**
 ```bash
-kubectl apply -f Phase2-QuakeWatch/cronjob.yaml
+kubectl apply -f cronjob.yaml
 kubectl get cronjobs
 ```
 
 
 7. **Add Health Probes**
 ```bash
-kubectl apply -f Phase2-QuakeWatch/deployment.yaml
+kubectl apply -f deployment.yaml
 kubectl get pods -w
 ```
 
@@ -222,26 +222,21 @@ kubectl logs -l job-name=quakewatch-cronjob --tail=10
 
 ### Create and Package Helm Chart
 ```bash
-# Create Helm chart
 helm create quakewatch-chart
 cd quakewatch-chart
 
-# Edit values.yaml and templates as needed
-# Package the chart
+
 helm package .
 ```
 
 ### Publish to Repository
 ```bash
-# Create repository directory
 mkdir helm-repo
 cp quakewatch-0.1.0.tgz helm-repo/
 
-# Generate index
 cd helm-repo
 helm repo index . --url https://mayameis.github.io/QuakeWatch/helm-repo
 
-# Push to GitHub Pages
 git add helm-repo/
 git commit -m "Add Helm repository"
 git push origin main
@@ -250,11 +245,9 @@ git push origin main
 
 ### Install from Repository
 ```bash
-# Add repository
 helm repo add my-quakewatch https://mayameis.github.io/QuakeWatch/helm-repo
 helm repo update
 
-# Search and install
 helm search repo my-quakewatch
 helm install my-app my-quakewatch/quakewatch
 ```
@@ -263,36 +256,26 @@ helm install my-app my-quakewatch/quakewatch
 
 ### Branching Strategy
 ```bash
-# Create develop branch
 git checkout -b develop
 
-# Create feature branch
 git checkout -b feature/add-tests
 
-# Merge feature to develop
 git checkout develop
 git merge feature/add-tests
 
-# Create hotfix
 git checkout -b hotfix/fix-version
 ```
 
 ### Conflict Resolution
 ```bash
-# When conflict occurs
 git merge hotfix/fix-version
-# Edit conflicted files
 git add .
 git commit -m "Resolve merge conflict"
 ```
 
 ### Pull Request Workflow
 ```bash
-# Push branch
 git push origin develop
-
-# Create PR on GitHub UI
-# Review and merge PR
 ```
 
 ## CI/CD Pipeline with GitHub Actions
@@ -315,18 +298,13 @@ on:
 
 
 ### View Pipeline Status
-# Check GitHub Actions
+Check GitHub Actions
 [View Pipeline Status](https://github.com/MAYAMEIS/QuakeWatch/actions)
 
 
 ### Verification Commands
 ```bash
-# Check Helm repository
 curl https://mayameis.github.io/QuakeWatch/helm-repo/index.yaml
 
-# List all branches
 git branch -a
-
-# View pipeline logs
-# Go to Actions tab in GitHub
 ```
