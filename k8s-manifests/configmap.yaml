@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quakewatch-config
+data:
+  APP_ENV: "production"
+  REFRESH_INTERVAL: "30"
+  MAX_RESULTS: "100"
+  DEFAULT_LOCATION: "Tel Aviv, Israel"
+  LOG_LEVEL: "INFO"
