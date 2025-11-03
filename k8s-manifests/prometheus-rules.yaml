@@ -1,19 +1,25 @@
-apiVersion: monitoring.coreos.com/v1
+﻿apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: quakewatch-alerts
   namespace: monitoring
   labels:
     app: kube-prometheus-stack
-    app.kubernetes.io/instance: prometheus
-    app.kubernetes.io/managed-by: Helm
     release: prometheus
-    prometheus: kube-prometheus
 spec:
   groups:
   - name: quakewatch
     interval: 30s
     rules:
+    - alert: QuakewatchTestAlert
+      expr: vector(1)
+      for: 1m
+      labels:
+        severity: info
+      annotations:
+        summary: "Test alert - always firing"
+        description: "If you see this - alerts are working!"
+
     - alert: HighPodRestartCount
       expr: kube_pod_container_status_restarts_total{namespace="default", pod=~"quakewatch-deployment.*"} > 3
       for: 5m
@@ -22,6 +28,7 @@ spec:
       annotations:
         summary: "High restart count for QuakeWatch pod"
         description: "Pod {{ $labels.pod }} has restarted {{ $value }} times."
+
     - alert: HighCPUUsage
       expr: rate(container_cpu_usage_seconds_total{namespace="default", pod=~"quakewatch-deployment.*"}[5m]) > 0.8
       for: 5m
@@ -30,6 +37,7 @@ spec:
       annotations:
         summary: "High CPU usage for QuakeWatch"
         description: "CPU usage for pod {{ $labels.pod }} is above 80%."
+
     - alert: HighErrorRate
       expr: kube_pod_container_status_restarts_total{namespace="default", pod=~"quakewatch-deployment.*"} >= 0
       for: 1m

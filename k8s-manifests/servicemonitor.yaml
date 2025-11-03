@@ -1,16 +1,16 @@
-apiVersion: monitoring.coreos.com/v1
+﻿apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: quakewatch-metrics
   namespace: default
   labels:
     app: quakewatch
+    release: prometheus
 spec:
-  type: LoadBalancer
   selector:
-    app: quakewatch
-  ports:
-  - name: http
-    protocol: TCP
-    port: 80
-    targetPort: 5000
+    matchLabels:
+      app: quakewatch
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
