@@ -2,11 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   name: quakewatch-service
+  labels:
+    app: quakewatch
 spec:
   selector:
     app: quakewatch
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 5000
   type: LoadBalancer
