@@ -39,8 +39,8 @@ spec:
         description: "CPU usage for pod {{ $labels.pod }} is above 80%."
 
     - alert: HighErrorRate
-      expr: kube_pod_container_status_restarts_total{namespace="default", pod=~"quakewatch-deployment.*"} >= 0
-      for: 1m
+      expr: kube_pod_container_status_restarts_total{namespace="default", pod=~"quakewatch-deployment.*"} >= 5
+      for: 5m
       labels:
         severity: critical
       annotations:
