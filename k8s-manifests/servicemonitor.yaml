@@ -2,7 +2,7 @@
 kind: ServiceMonitor
 metadata:
   name: quakewatch-metrics
-  namespace: default
+  namespace: monitoring
   labels:
     app: quakewatch
     release: prometheus
