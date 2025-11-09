@@ -308,3 +308,171 @@ curl https://mayameis.github.io/QuakeWatch/helm-repo/index.yaml
 
 git branch -a
 ```
+
+
+
+# ==========================================
+# Phase 4: GitOps & Monitoring
+# ==========================================
+
+## GitOps with ArgoCD
+
+### ArgoCD Installation
+```bash
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl get pods -n argocd
+```
+
+### Access ArgoCD UI
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+
+# Get password:
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+# Login: admin / <password>
+# Visit: https://localhost:8080
+```
+
+### Configure Application
+```bash
+kubectl apply -f argocd-application.yaml
+kubectl get application quakewatch -n argocd
+```
+
+**Expected Status:**
+- Sync Status: `Synced` ✅
+- Health Status: `Progressing` (normal - see troubleshooting)
+
+### Auto-Sync Configuration
+Auto-sync is enabled with:
+- **Prune:** Auto-delete resources removed from Git
+- **Self-Heal:** Auto-sync on manual cluster changes
+
+Any push to GitHub automatically updates the cluster!
+
+---
+
+## Monitoring with Prometheus & Grafana
+
+### Installation
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace
+
+kubectl get pods -n monitoring
+```
+
+### ServiceMonitor Configuration
+```bash
+kubectl apply -f k8s-manifests/servicemonitor.yaml
+kubectl get servicemonitor quakewatch-metrics -n default
+```
+
+**Verify Prometheus is scraping:**
+```bash
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+# Visit: http://localhost:9090/targets
+# Search: "quakewatch" - Status should be UP
+```
+
+### PrometheusRule (Alerts)
+```bash
+kubectl apply -f k8s-manifests/prometheus-rules.yaml
+kubectl get prometheusrule quakewatch-alerts -n monitoring
+```
+
+**4 Alert Rules Configured:**
+1. **QuakewatchTestAlert** - Test alert (always firing)
+2. **HighPodRestartCount** - Warns when restarts > 3
+3. **HighCPUUsage** - Critical when CPU > 80%
+4. **HighErrorRate** - Critical when restarts >= 5
+
+**View Alerts:**
+```bash
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+# Visit: http://localhost:9090/alerts
+```
+
+### Grafana Dashboard
+```bash
+# Get Grafana password:
+kubectl get secret -n monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d
+
+# Port forward:
+kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+
+# Login: admin / <password>
+# Visit: http://localhost:3000
+```
+
+**Dashboard: "QuakeWatch Monitoring"**
+- 8 panels with comprehensive metrics
+- CPU/Memory usage
+- Request rates and latency
+- Pod health and restarts
+- Active alerts
+
+---
+
+## Verification Commands
+
+### Check ArgoCD Status
+```bash
+kubectl get application quakewatch -n argocd
+kubectl get pods -n default | findstr quakewatch
+```
+
+### Check Monitoring Stack
+```bash
+kubectl get pods -n monitoring
+kubectl get servicemonitor -n default
+kubectl get prometheusrule -n monitoring | findstr quakewatch
+```
+
+### Test Application
+```bash
+kubectl port-forward svc/quakewatch-service 5000:80
+# Visit: http://localhost:5000
+```
+
+---
+
+## Troubleshooting
+
+### ArgoCD Health: Progressing
+**This is normal!** Status shows `Progressing` due to:
+- LoadBalancer service in `<pending>` (Minikube limitation)
+- CronJob creating pods every 5 minutes
+- HPA dynamic scaling
+
+✅ All resources are `Synced`  
+✅ All pods are `Running`  
+✅ Application fully functional
+
+### Prometheus Targets Down
+```bash
+# Check ServiceMonitor
+kubectl describe servicemonitor quakewatch-metrics -n default
+
+# Verify /metrics endpoint
+kubectl port-forward svc/quakewatch-service 5000:80
+# Visit: http://localhost:5000/metrics
+```
+
+### Grafana No Data
+```bash
+# Test Prometheus data source in Grafana
+# Configuration → Data Sources → Prometheus → Test
+
+# Verify metrics in Prometheus
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+# Query: kube_pod_info{namespace="default"}
+```
+
+---
